@@ -110,7 +110,7 @@ function stopLoading() {
 function startLoading(text: string, timeoutMs: number | null) {
   stopLoading();
 
-  debugLog(`Starting loading: ${text} with timeout ${timeoutMs}ms`);
+  debugLog(`Starting loading: ${text} with timeoutMs=${timeoutMs}`);
 
   if (timeoutMs != null) {
     setTimeout(() => {
