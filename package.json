@@ -1,0 +1,28 @@
+{
+  "name": "codapt",
+  "version": "1.0.0",
+  "description": "The CLI client for Codapt, the AI-powered Next.js full-stack application builder",
+  "main": "dist/main.js",
+  "bin": {
+    "codapt": "./dist/main.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codaptai/codapt-client.git"
+  },
+  "author": "Trevor Keith <trevor@codapt.ai>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/codaptai/codapt-client/issues"
+  },
+  "homepage": "https://github.com/codaptai/codapt-client#readme",
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.7.2"
+  }
+}
