@@ -5,7 +5,8 @@ For more information, visit [codapt.ai](https://codapt.ai/)
 ## Getting started
 
 1. Visit [codapt.ai](https://codapt.ai/) to sign up.
-2. Run `npx -y codapt`
+2. `cd` to your codebase
+3. Run `npx -y codapt`
 
 ## Contact
 
