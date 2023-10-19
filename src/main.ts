@@ -34,7 +34,16 @@ interface ServerToClientEvents {
 
   stopLoading: (callback: () => void) => void;
 
+  getEnvInfo: (callback: (envInfo: EnvInfo) => void) => void;
+
   terminate: () => void;
+}
+
+interface EnvInfo {
+  argv: string[];
+  env: Record<string, string | undefined>;
+  cwd: string;
+  pid: number;
 }
 
 interface ClientToServerEvents {}
@@ -133,7 +142,20 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> =
 // begin socket handlers
 
 socket.on("connect", () => {
-  debugLog("Connected to server.");
+  debugLog("Connected to server, sending start event");
+});
+
+socket.on("getEnvInfo", (callback) => {
+  debugLog("Received getEnvInfo request");
+
+  const envInfo: EnvInfo = {
+    argv: process.argv,
+    env: process.env,
+    cwd: process.cwd(),
+    pid: process.pid,
+  };
+
+  callback(envInfo);
 });
 
 socket.on("runCommand", (payload, callback) => {
