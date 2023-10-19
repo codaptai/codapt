@@ -19,7 +19,7 @@ interface CommandResponse {
 interface ServerToClientEvents {
   runCommand: (
     payload: CommandPayload,
-    callback: (response: CommandResponse) => void
+    callback: (response: CommandResponse) => void,
   ) => void;
 
   emitToStdout: (text: string, callback: () => void) => void;
@@ -29,7 +29,7 @@ interface ServerToClientEvents {
   startLoading: (
     text: string,
     timeoutMs: number | null,
-    callback: () => void
+    callback: () => void,
   ) => void;
 
   stopLoading: (callback: () => void) => void;
@@ -73,7 +73,7 @@ const runCommand = (payload: CommandPayload): Promise<CommandResponse> => {
             stderr,
           });
         }
-      }
+      },
     );
 
     // Handle possible errors related to command execution itself (e.g., command not found)
