@@ -6,7 +6,8 @@
     "codapt": "run.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
