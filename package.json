@@ -1,6 +1,6 @@
 {
   "name": "codapt",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "The CLI client for Codapt, the AI-powered Next.js full-stack application builder",
   "bin": {
     "codapt": "./run.js"
