@@ -1,13 +1,13 @@
 {
   "name": "codapt",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The CLI client for Codapt, the AI-powered Next.js full-stack application builder",
   "bin": {
     "codapt": "run.js"
   },
   "scripts": {
     "build": "tsc",
-    "publish": "npm run build && npm publish"
+    "build-and-publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
