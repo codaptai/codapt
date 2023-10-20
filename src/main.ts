@@ -142,7 +142,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> =
 // begin socket handlers
 
 socket.on("connect", () => {
-  debugLog("Connected to server, sending start event");
+  debugLog("Connected to server");
 });
 
 socket.on("getEnvInfo", (callback) => {
