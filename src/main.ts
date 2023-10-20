@@ -7,6 +7,7 @@ const DEFAULT_SERVER = "https://client-socket.codapt.ai/";
 
 interface CommandPayload {
   command: string;
+  stdin: string | null;
   timeoutMs: number | null;
 }
 
@@ -16,15 +17,22 @@ interface CommandResponse {
   stderr: string;
 }
 
+interface EnvInfo {
+  argv: string[];
+  env: Record<string, string | undefined>;
+  cwd: string;
+  pid: number;
+}
+
 interface ServerToClientEvents {
   runCommand: (
     payload: CommandPayload,
     callback: (response: CommandResponse) => void,
   ) => void;
 
-  emitToStdout: (text: string, callback: () => void) => void;
+  print: (text: string, callback: () => void) => void;
 
-  readLine: (callback: (line: string) => void) => void;
+  readStdin: (callback: (line: string) => void) => void;
 
   startLoading: (
     text: string,
@@ -39,13 +47,6 @@ interface ServerToClientEvents {
   terminate: () => void;
 }
 
-interface EnvInfo {
-  argv: string[];
-  env: Record<string, string | undefined>;
-  cwd: string;
-  pid: number;
-}
-
 interface ClientToServerEvents {}
 
 // end shared types
@@ -54,7 +55,7 @@ interface ClientToServerEvents {}
 
 const runCommand = (payload: CommandPayload): Promise<CommandResponse> => {
   return new Promise((resolve, reject) => {
-    const { command, timeoutMs } = payload;
+    const { command, timeoutMs, stdin } = payload;
 
     const child = exec(
       command,
@@ -75,6 +76,12 @@ const runCommand = (payload: CommandPayload): Promise<CommandResponse> => {
         }
       },
     );
+
+    // If stdin is provided, write it to the child process's stdin
+    if (stdin != null) {
+      child.stdin.write(stdin);
+      child.stdin.end();
+    }
 
     // Handle possible errors related to command execution itself (e.g., command not found)
     child.on("error", (err) => {
@@ -136,8 +143,10 @@ if (process.env.CODAPT_SERVER) {
   server = process.env.CODAPT_SERVER;
 }
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> =
-  connect(server);
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = connect(
+  server,
+  { timeout: 5000 },
+);
 
 // begin socket handlers
 
@@ -172,13 +181,13 @@ socket.on("runCommand", (payload, callback) => {
     });
 });
 
-socket.on("emitToStdout", (text, callback) => {
+socket.on("print", (text, callback) => {
   stopLoading();
   process.stdout.write(text);
   callback();
 });
 
-socket.on("readLine", (callback) => {
+socket.on("readStdin", (callback) => {
   stopLoading();
 
   process.stdin.resume();
@@ -207,7 +216,8 @@ socket.on("terminate", () => {
 });
 
 socket.on("disconnect", () => {
-  debugLog("Disconnected from server.");
+  debugLog("Disconnected from server, terminating...");
+  process.exit(0);
 });
 
 // end socket handlers
