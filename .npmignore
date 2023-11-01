@@ -3,3 +3,5 @@ src
 *.ts
 !*.d.ts
 tsconfig.json
+.prettierrc.json
+.vscode

@@ -1,6 +1,6 @@
 {
   "name": "codapt",
-  "version": "1.0.8",
+  "version": "1.0.11",
   "description": "The CLI client for Codapt, the AI-powered Next.js full-stack application builder",
   "bin": {
     "codapt": "run.js"
@@ -21,6 +21,7 @@
   "homepage": "https://codapt.ai/",
   "devDependencies": {
     "@types/node": "^20.8.10",
+    "tsx": "^3.14.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
