@@ -7,7 +7,7 @@ const DEFAULT_SERVER = "https://client-socket.codapt.ai/";
 
 interface CommandPayload {
   command: string;
-  cwd: string;
+  cwd: string | null;
   stdin: string | null;
   timeoutMs: number | null;
 }
@@ -60,7 +60,7 @@ const runCommand = (payload: CommandPayload): Promise<CommandResponse> => {
 
     const child = exec(
       command,
-      { cwd: payload.cwd, timeout: timeoutMs ?? undefined },
+      { cwd: payload.cwd ?? undefined, timeout: timeoutMs ?? undefined },
       (error, stdout, stderr) => {
         if (error) {
           resolve({
