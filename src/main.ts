@@ -79,6 +79,9 @@ const runCommand = (payload: CommandPayload): Promise<CommandResponse> => {
 
     // If stdin is provided, write it to the child process's stdin
     if (stdin != null) {
+      if (child.stdin == null) {
+        throw new Error("unexpected: child.stdin is null");
+      }
       child.stdin.write(stdin);
       child.stdin.end();
     }
@@ -209,7 +212,7 @@ async function main() {
 
     process.stdin.once("data", (text) => {
       process.stdin.pause();
-      callback(text);
+      callback(text.toString());
     });
   });
 

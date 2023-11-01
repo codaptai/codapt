@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ESNext",
     "skipLibCheck": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
