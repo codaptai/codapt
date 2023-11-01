@@ -101,6 +101,11 @@ function debugLog(message: string) {
 }
 
 let loadingInterval: NodeJS.Timeout | null = null;
+let lastLoadingLineWritten: string = "";
+
+function writeLastLoadingLine() {
+  process.stdout.write(lastLoadingLineWritten);
+}
 
 function clearLine() {
   process.stdout.write("\u001b[0G\u001b[2K");
@@ -130,7 +135,8 @@ function startLoading(text: string, timeoutMs: number | null) {
 
   loadingInterval = setInterval(() => {
     clearLine();
-    process.stdout.write(spinnerChars[i]! + " " + text);
+    lastLoadingLineWritten = spinnerChars[i]! + " " + text;
+    writeLastLoadingLine();
     i = (i + 1) % spinnerChars.length;
   }, 100);
 }
@@ -143,81 +149,92 @@ if (process.env.CODAPT_SERVER) {
   server = process.env.CODAPT_SERVER;
 }
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = connect(
-  server,
-  { timeout: 5000 },
-);
+async function main() {
+  startLoading("Connecting to server...", 5000);
+  const socket: Socket<ServerToClientEvents, ClientToServerEvents> = connect(
+    server,
+    { timeout: 5000 },
+  );
 
-// begin socket handlers
+  // begin socket handlers
 
-socket.on("connect", () => {
-  debugLog("Connected to server");
-});
-
-socket.on("getEnvInfo", (callback) => {
-  debugLog("Received getEnvInfo request");
-
-  const envInfo: EnvInfo = {
-    argv: process.argv,
-    env: process.env,
-    cwd: process.cwd(),
-    pid: process.pid,
-  };
-
-  callback(envInfo);
-});
-
-socket.on("runCommand", (payload, callback) => {
-  debugLog(`Received command: ${payload.command}`);
-
-  runCommand(payload)
-    .then((response) => {
-      debugLog(`Command succeeded: ${payload.command}`);
-      callback(response);
-    })
-    .catch((error) => {
-      debugLog(`Command failed: ${payload.command}`);
-      callback(error);
-    });
-});
-
-socket.on("print", (text, callback) => {
-  stopLoading();
-  process.stdout.write(text);
-  callback();
-});
-
-socket.on("readStdin", (callback) => {
-  stopLoading();
-
-  process.stdin.resume();
-  process.stdin.setEncoding("utf8");
-
-  process.stdin.once("data", (text) => {
-    process.stdin.pause();
-    callback(text);
+  socket.on("connect", () => {
+    stopLoading();
+    debugLog("Connected to server");
   });
-});
 
-socket.on("startLoading", (text, timeoutMs, callback) => {
-  startLoading(text, timeoutMs);
-  callback();
-});
+  socket.on("getEnvInfo", (callback) => {
+    debugLog("Received getEnvInfo request");
 
-socket.on("stopLoading", (callback) => {
-  stopLoading();
-  debugLog("Stopping loading");
-  callback();
-});
+    const envInfo: EnvInfo = {
+      argv: process.argv,
+      env: process.env,
+      cwd: process.cwd(),
+      pid: process.pid,
+    };
 
-socket.on("terminate", () => {
-  debugLog("Terminating");
-  process.exit(0);
-});
+    callback(envInfo);
+  });
 
-socket.on("disconnect", () => {
-  debugLog("Disconnected from server, terminating...");
-  process.exit(0);
-});
+  socket.on("runCommand", (payload, callback) => {
+    debugLog(`Received command: ${payload.command}`);
 
-// end socket handlers
+    runCommand(payload)
+      .then((response) => {
+        debugLog(`Command succeeded: ${payload.command}`);
+        callback(response);
+      })
+      .catch((error) => {
+        debugLog(`Command failed: ${payload.command}`);
+        callback(error);
+      });
+  });
+
+  socket.on("print", (text, callback) => {
+    if (loadingInterval) {
+      clearLine();
+    }
+    process.stdout.write(text);
+    if (loadingInterval) {
+      writeLastLoadingLine();
+    }
+    callback();
+  });
+
+  socket.on("readStdin", (callback) => {
+    stopLoading();
+
+    process.stdin.resume();
+    process.stdin.setEncoding("utf8");
+
+    process.stdin.once("data", (text) => {
+      process.stdin.pause();
+      callback(text);
+    });
+  });
+
+  socket.on("startLoading", (text, timeoutMs, callback) => {
+    startLoading(text, timeoutMs);
+    callback();
+  });
+
+  socket.on("stopLoading", (callback) => {
+    stopLoading();
+    debugLog("Stopping loading");
+    callback();
+  });
+
+  socket.on("terminate", () => {
+    debugLog("Terminating");
+    process.exit(0);
+  });
+
+  socket.on("disconnect", () => {
+    debugLog("Disconnected from server, terminating...");
+    process.exit(0);
+  });
+
+  // end socket handlers
+}
+
+main();
