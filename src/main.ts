@@ -154,13 +154,20 @@ if (process.env.CODAPT_SERVER) {
 }
 
 async function main() {
-  startLoading("Connecting to server...", 5000);
+  startLoading("Connecting to server...", null);
   const socket: Socket<ServerToClientEvents, ClientToServerEvents> = connect(
     server,
     { timeout: 5000 },
   );
 
   // begin socket handlers
+
+  socket.on("connect_error", (error) => {
+    stopLoading();
+    console.error(`Failed to connect to server`);
+    debugLog(`connect_error: ${error.message}`);
+    process.exit(1);
+  });
 
   socket.on("connect", () => {
     stopLoading();
