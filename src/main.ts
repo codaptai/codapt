@@ -1,7 +1,7 @@
 import { connect, io, Socket } from "socket.io-client";
 import { exec } from "child_process";
 
-const DEFAULT_SERVER = "https://client-socket.codapt.ai/";
+const DEFAULT_SERVER = "https://codapt.ai/";
 
 // begin shared types
 
@@ -164,7 +164,7 @@ async function main() {
 
   socket.on("connect_error", (error) => {
     stopLoading();
-    console.error(`Failed to connect to server`);
+    console.log(`❌  Failed to connect to server`);
     debugLog(`connect_error: ${error.message}`);
     process.exit(1);
   });
