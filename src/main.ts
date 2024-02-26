@@ -1,7 +1,7 @@
 import { connect, io, Socket } from "socket.io-client";
 import { exec } from "child_process";
 
-const DEFAULT_SERVER = "https://codapt.ai/";
+// const DEFAULT_SERVER = "https://codapt.ai/";
 
 // begin shared types
 
@@ -147,14 +147,25 @@ function startLoading(text: string, timeoutMs: number | null) {
 
 // end helper functions
 
-let server = DEFAULT_SERVER;
-
-if (process.env.CODAPT_SERVER) {
-  server = process.env.CODAPT_SERVER;
-}
+// let server = DEFAULT_SERVER;
 
 async function main() {
   startLoading("Connecting to server...", null);
+
+  let server;
+
+  if (process.env.CODAPT_SERVER) {
+    server = process.env.CODAPT_SERVER;
+  } else {
+    const fetchRes = await fetch("https://codapt.ai/server_url");
+    if (!fetchRes.ok) {
+      stopLoading();
+      console.log("❌  Failed to connect to server (1)");
+      process.exit(1);
+    }
+    server = (await fetchRes.text()).trim();
+  }
+
   const socket: Socket<ServerToClientEvents, ClientToServerEvents> = connect(
     server,
     { timeout: 5000 },
@@ -164,7 +175,7 @@ async function main() {
 
   socket.on("connect_error", (error) => {
     stopLoading();
-    console.log(`❌  Failed to connect to server`);
+    console.log(`❌  Failed to connect to server (2)`);
     debugLog(`connect_error: ${error.message}`);
     process.exit(1);
   });
